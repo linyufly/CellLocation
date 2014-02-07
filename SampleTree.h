@@ -25,11 +25,11 @@ private:
     int maxTreeDepth;
     SplittingMethod method;
 
-    void GetSplittingPositionByIntersectionRate(int fr, int to, int *sortArray, const Vector &lowerPoint, const Vector &upperPoint);
+    double GetSplittingPositionByIntersectionRate(int fr, int to, int *sortArray, int dim, const Vector &lowerPoint, const Vector &upperPoint, double *accumulativeTop, double *accumulativeBottom);
     void RecursiveBuild(const Node &currNode, int &cnt, int fr, int to, int *sortArray, int *assistArray);
 
 public:
-    enum {MEAN, MEADIUM, VOLUMN, INTERSECTION} SplittingMethod;
+    enum {MEAN, MEDIUM, VOLUMN, INTERSECTION} SplittingMethod;
 
     SampleTree() {
         this->nodes = NULL;

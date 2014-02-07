@@ -5,13 +5,97 @@ Last Update	:	February 6th, 2014
 ***********************************************/
 
 #include "SampleTree.h"
+#include "Geometry.h"
 #include "Utility.h"
 
 #include <cstring>
 
 #include <algorithm>
 
-void SampleTree::RecursiveRuild(const Node &currNode, int &cnt, int fr, int to, int *sortArray, int *assistArray) {
+static double GetVectorComponent(const Vector &a, int dim) {
+    switch (dim) {
+        case 0: return a.GetX(); break;
+        case 1: return a.GetY(); break;
+        case 2: return a.GetZ(); break;
+    }
+    Error("invalid dimension");
+}
+
+double SampleTree::GetSplittingPositionByIntersectionRate(int fr, int to, int *sortArray, int dim, const Vector &lowerPoint, const Vector &upperPoint, double *accumulativeTop, double *accumulativeBottom) {
+    accumulativeTop[to] = accumulativeBottom[to] = GetVectorComponent(this->samples[sortArray[to]], (dim + 1) % 3);
+    accumulativeTop[to + this->numOfSamples] = accumulativeBottom[to + this->numOfSamples] = GetVectorComponent(this->samples[sortArray[to]], (dim + 2) % 3);
+    for (int i = to - 1; i >= fr; i--) {
+        double v1 = GetVectorComponent(this->samples[sortArray[i]], (dim + 1) % 3);
+        double v2 = GetVectorComponent(this->samples[sortArray[i]], (dim + 2) % 3);
+
+        accumulativeTop[i] = std::max(accumulativeTop[i + 1], v1);
+        accumulativeBottom[i] = std::min(accumulativeBottom[i + 1], v1);
+
+        accumulativeTop[i + this->numOfSamples] = std::max(accumulativeTop[i + 1 + this->numOfSamples], v2);
+        accumulativeBottom[i + this->numOfSamples] = std::min(accumulativeBottom[i + 1 + this->numOfSamples], v2);
+    }
+
+    int lowerBound, upperBound;
+    double top[2], bottom[2];
+    top[0] = bottom[0] = GetVectorComponent(samples[sortArray[fr]], (dim + 1) % 3);
+    top[1] = bottom[1] = GetVectorComponent(samples[sortArray[fr]], (dim + 2) % 3);
+
+    double bestExpectation = -1;
+    int bestUpperBound;
+
+    for (lowerBound = fr; lowerBound < to; lowerBound = upperBound) {
+        double pos = GetVectorComponent(this->samples[sortArray[lowerBound]], dim);
+        for (upperBound = lowerBound; upperBound <= to && GetVectorComponent(this->samples[sortArray[upperBound]], dim) == pos; upperBound++) {
+            double v1 = GetVectorComponent(this->samples[sortArray[upperBound]], (dim + 1) % 3);
+            double v2 = GetVectorComponent(this->samples[sortArray[upperBound]], (dim + 2) % 3);
+
+            top[0] = std::max(top[0], v1);
+            bottom[0] = std::min(bottom[0], v1);
+
+            top[1] = std::max(top[1], v2);
+            bottom[1] = std::max(bottom[1], v2);
+        }
+        if (upperBound > to) break;
+
+        double p1 = Sqr(GetVectorComponent(upperPoint, dim) - GetVectorComponent(lowerPoint, dim)) - 
+                    Sqr(GetVectorComponent(this->samples[sortArray[fr]], dim) - GetVectorComponent(lowerPoint, dim)) -
+                    Sqr(GetVectorComponent(upperPoint, dim) - GetVectorComponent(this->samples[sortArray[upperBound - 1]], dim));
+
+        double p2 = Sqr(GetVectorComponent(upperPoint, (dim + 1) % 3) - GetVectorComponent(lowerPoint, (dim + 1) % 3)) -
+                    Sqr(GetVectorComponent(bottom[0], (dim + 1) % 3) - GetVectorComponent(lowerPoint, (dim + 1) % 3)) -
+                    Sqr(GetVectorComponent(upperPoint, (dim + 1) % 3) - GetVectorComponent(top[0], (dim + 1) % 3));
+
+        double p3 = Sqr(GetVectorComponent(upperPoint, (dim + 2) % 3) - GetVectorComponent(lowerPoint, (dim + 2) % 3)) -
+                    Sqr(GetVectorComponent(bottom[1], (dim + 2) % 3) - GetVectorComponent(lowerPoint, (dim + 2) % 3)) -
+                    Sqr(GetVectorComponent(upperPoint, (dim + 2) % 3) - GetVectorComponent(top[1], (dim + 2) % 3));
+
+        double expectation1 = p1 * p2 * p3 * (upperBound - fr);
+
+        p1 = Sqr(GetVectorComponent(upperPoint, dim) - GetVectorComponent(lowerPoint, dim)) -
+             Sqr(GetVectorComponent(this->samples[sortArray[upperBound]], dim) - GetVectorComponent(lowerPoint, dim)) -
+             Sqr(GetVectorComponent(upperPoint, dim) - GetVectorComponent(this->samples[sortArray[to]], dim));
+
+        p2 = Sqr(GetVectorComponent(upperPoint, (dim + 1) % 3) - GetVectorComponent(lowerPoint, (dim + 1) % 3)) -
+                 Sqr(GetVectorComponent(accumulativeBottom[upperBound], (dim + 1) % 3) - GetVectorComponent(lowerPoint, (dim + 1) % 3)) -
+                 Sqr(GetVectorComponent(upperPoint, (dim + 1) % 3) - GetVectorComponent(accumulativeTop[upperBound], (dim + 1) % 3));
+
+        p3 = Sqr(GetVectorComponent(upperPoint, (dim + 2) % 3) - GetVectorComponent(lowerPoint, (dim + 2) % 3)) -
+                 Sqr(GetVectorComponent(accumulativeBottom[upperBound + this->numOfSamples], (dim + 2) % 3) - GetVectorComponent(lowerPoint, (dim + 2) % 3)) -
+                 Sqr(GetVectorComponent(upperPoint, (dim + 2) % 3) - GetVectorComponent(accumulativeTop[upperBound + this->numOfSamples], (dim + 2) % 3));
+
+        double expectation2 = p1 * p2 * p3 * (to - upperBound + 1);
+
+        double expectation = expectation1 + expectation2;
+        if (bestExpectation < 0 || expectation < bestExpectation) {
+            bestExpectation = expectation;
+            bestUpperBound = upperBound;
+        }
+    }
+
+    return GetVectorComponent(this->samples[sortArray[bestUpperBound - 1]], dim);
+}
+
+void SampleTree::RecursiveBuildByIntersection(const Node &currNode, int &cnt, int fr, int to, int *sortArray, int *assistArray, double *accumulativeTop, double *accumulativeBottom) {
     currNode.population = to - fr + 1;
     currNode.lowerPoint = Vector(samples[sortArray[fr]].GetX(),
                                  samples[sortArray[this->numOfSamples + fr]].GetY(),
@@ -38,12 +122,25 @@ void SampleTree::RecursiveRuild(const Node &currNode, int &cnt, int fr, int to, 
         if (spanLength[i] > spanLength[dim])
             dim = i;
 
-    double splittingPosition;
-    switch (this->method) {
-        case INTERSECTION:
-            splittingPosition = this->GetSplittingPositionByIntersectionRate(fr, to, sortArray, currNode.lowerPoint, currNode.upperPoint);
-            break;
+    double splittingPosition = this->GetSplittingPositionByIntersectionRate(fr, to, sortArray + dim * this->numOfSamples, dim,
+                                                                            currNode.lowerPoint, currNode.upperPoint,
+                                                                            accumulativeTop, accumulativeBottom);
+
+    int l1, l2;
+    for (int d = 0; d < 3; d++) {
+        l1 = l2 = 0;
+        int *arr = sortArray + d * this->numOfSamples;
+        for (int i = fr; i <= to; i++)
+            if (GetVectorComponent(this->samples[arr[i]], dim) <= splittingPosition)
+                arr[fr + l1++] = arr[i];
+            else
+                assistArray[fr + l2++] = arr[i];
+        for (int i = 0; i < l2; i++)
+            arr[fr + l1++] = assistArray[fr + i];
     }
+
+    this->RecursiveBuildByIntersection(nodes[currNode.leftIndex], cnt, fr, to - l2, sortArray, assistArray, accumulativeTop, accumulativeBottom);
+    this->RecursiveBuildByIntersection(nodes[currNode.rightIndex], cnt, to - l2 + 1, to, sortArray, assistArray, accumulativeTop, accumulativeBottom);
 }
 
 static struct SampleComparator {
@@ -84,8 +181,18 @@ void SampleTree::Build(const Vector *samples, int numOfSamples) {
     this->nodes = new SampleTree::Node [numOfNodes];
 
     int cnt = 0;
-    this->RecursiveBuild(nodes[0], cnt, 0, numOfSamples - 1,
-                         sortArray, assistArray, samples);
+    switch (this->method) {
+        case SampleTree::INTERSECTION: {
+            double *accumulativeTop = new double [numOfSamples * 2];
+            double *accumulativeBottom = new double [numOfSamples * 2];
+
+            this->RecursiveBuildByIntersectionRate(nodes[0], cnt, 0, numOfSamples - 1,
+                                                   sortArray, assistArray, samples, accumulativeTop, accumulativeBottom);
+
+            delete [] accumulativeTop;
+            delete [] accumulativeBottom;
+        } break;
+    }
 
     delete [] assistArray;
     delete [] sortArray;
