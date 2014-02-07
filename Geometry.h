@@ -22,13 +22,13 @@ double Cub(double a);
 
 class Vector;
 
-lcs::Vector operator + (const lcs::Vector &, const lcs::Vector &);
-lcs::Vector operator - (const lcs::Vector &, const lcs::Vector &);
-lcs::Vector operator * (const lcs::Vector &, const double &);
-lcs::Vector operator / (const lcs::Vector &, const double &);
-lcs::Vector Cross(const lcs::Vector &, const lcs::Vector &);
-double Dot(const lcs::Vector &, const lcs::Vector &);
-double Mixed(const lcs::Vector &, const lcs::Vector &, const lcs::Vector &);
+Vector operator + (const Vector &, const Vector &);
+Vector operator - (const Vector &, const Vector &);
+Vector operator * (const Vector &, const double &);
+Vector operator / (const Vector &, const double &);
+Vector Cross(const Vector &, const Vector &);
+double Dot(const Vector &, const Vector &);
+double Mixed(const Vector &, const Vector &, const Vector &);
 
 ////////////////////////////////////////////////
 class Vector {
@@ -85,13 +85,13 @@ public:
 		printf("(%lf, %lf, %lf)\n", this->x, this->y, this->z);
 	}
 
-	friend lcs::Vector operator + (const lcs::Vector &, const lcs::Vector &);
-	friend lcs::Vector operator - (const lcs::Vector &, const lcs::Vector &);
-	friend lcs::Vector operator * (const lcs::Vector &, const double &);
-	friend lcs::Vector operator / (const lcs::Vector &, const double &);
-	friend lcs::Vector lcs::Cross(const lcs::Vector &, const lcs::Vector &);
-	friend double lcs::Dot(const lcs::Vector &, const lcs::Vector &);
-	friend double lcs::Mixed(const lcs::Vector &, const lcs::Vector &, const lcs::Vector &);
+	friend Vector operator + (const Vector &, const Vector &);
+	friend Vector operator - (const Vector &, const Vector &);
+	friend Vector operator * (const Vector &, const double &);
+	friend Vector operator / (const Vector &, const double &);
+	friend Vector Cross(const Vector &, const Vector &);
+	friend double Dot(const Vector &, const Vector &);
+	friend double Mixed(const Vector &, const Vector &, const Vector &);
 
 private:
 	double x, y, z;

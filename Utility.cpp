@@ -4,7 +4,7 @@ Author		:	Mingcheng Chen
 Last Update	:	February 6th, 2014
 ***********************************************/
 
-#include "utility.h"
+#include "Utility.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -13,18 +13,18 @@ Last Update	:	February 6th, 2014
 #include <cstring>
 #include <sys/time.h>
 
-int lcs::Code(int x, int y, int z, int ny, int nz) {
+int Code(int x, int y, int z, int ny, int nz) {
     return (x * (ny + 1) + y) * (nz + 1) + z;
 }
 
-void lcs::Decode(int &x, int &y, int &z, int code, int ny, int nz) {
+void Decode(int &x, int &y, int &z, int code, int ny, int nz) {
     z = code % (nz + 1);
     code /= (nz + 1);
     y = code % (ny + 1);
     x = code / (ny + 1);
 }
 
-void lcs::Error(const char *format, ...) {
+void Error(const char *format, ...) {
     char buffer[256];
     va_list args;
     va_start(args, format);
@@ -34,25 +34,25 @@ void lcs::Error(const char *format, ...) {
     exit(-1);
 }
 
-double lcs::ParseDouble(const char *str) {
+double ParseDouble(const char *str) {
     double res;
     sscanf(str, "%lf", &res);
     return res;
 }
 
-int lcs::ParseInt(const char *str) {
+int ParseInt(const char *str) {
     int res;
     sscanf(str, "%d", &res);
     return res;
 }
 
-void lcs::ConsumeChar(char goal, FILE *fin) {
+void ConsumeChar(char goal, FILE *fin) {
     char ch = fgetc(fin);
     for (; ch != goal && ch != EOF; ch = fgetc(fin));
-    if (ch == EOF) lcs::Error("The configuration file is defective.");
+    if (ch == EOF) Error("The configuration file is defective.");
 }
 
-double lcs::GetCurrentTimeInSeconds() {
+double GetCurrentTimeInSeconds() {
     timeval currTime;
     gettimeofday(&currTime, 0);
     return currTime.tv_sec + currTime.tv_usec * 1e-6;
@@ -64,7 +64,7 @@ double lcs::GetCurrentTimeInSeconds() {
     if (!strcmp(name, STR(var))) { \
         printf(STR(read var ...)); \
         int value; \
-        if (fscanf(fin, "%d", &value) != 1) lcs::Error(STR(Fail to read var)); \
+        if (fscanf(fin, "%d", &value) != 1) Error(STR(Fail to read var)); \
         this->var = value; \
         printf(STR(Done. var = %d\n), var); \
         continue; \
@@ -73,7 +73,7 @@ double lcs::GetCurrentTimeInSeconds() {
     if (!strcmp(name, STR(var))) { \
         printf(STR(read var ...)); \
         double value; \
-        if (fscanf(fin, "%lf", &value) != 1) lcs::Error(STR(Fail to read var)); \
+        if (fscanf(fin, "%lf", &value) != 1) Error(STR(Fail to read var)); \
         this->var = value; \
         printf(STR(Done. var = %lf\n), var); \
         continue; \
@@ -81,23 +81,23 @@ double lcs::GetCurrentTimeInSeconds() {
 #define READ_STRING(var) \
     if (!strcmp(name, STR(var))) { \
         printf(STR(read var ...)); \
-        lcs::ConsumeChar('\"', fin); \
+        ConsumeChar('\"', fin); \
         this->var = ""; \
         while (1) { \
             ch = fgetc(fin); \
-            if (ch == EOF) lcs::Error("The configuration file is defective."); \
+            if (ch == EOF) Error("The configuration file is defective."); \
             if (ch == '\"') break; \
             this->var += ch; \
         } \
         printf(STR(Done. var = %s\n), var.c_str()); \
     }
 
-void lcs::Configuration::LoadFile(const char *fileName) {
+void Configuration::LoadFile(const char *fileName) {
     FILE *fin;
     fin = fopen(fileName, "r");
  
     if (fin == NULL)
-        lcs::Error("Configuration file \"%s\" cannot be opened.", fileName);
+        Error("Configuration file \"%s\" cannot be opened.", fileName);
 
     char ch;
     while ((ch = fgetc(fin)) != EOF) {
@@ -115,7 +115,7 @@ void lcs::Configuration::LoadFile(const char *fileName) {
             name[len] = 0;
 
             // Skip the equation mark
-            lcs::ConsumeChar('=', fin);
+            ConsumeChar('=', fin);
 
             READ_DOUBLE(dx)
             READ_DOUBLE(dy)
@@ -128,7 +128,7 @@ void lcs::Configuration::LoadFile(const char *fileName) {
             READ_STRING(dataFile)
 
             if (stencilSize % 2 == 0)
-                lcs::Error("Stencil size is even.");
+                Error("Stencil size is even.");
         }
     }
 

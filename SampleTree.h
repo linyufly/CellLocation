@@ -4,32 +4,14 @@ Author		:	Mingcheng Chen
 Last Update	:	February 6th, 2014
 ***********************************************/
 
-#ifdef __SAMPLE_TREE_H
+#ifndef __SAMPLE_TREE_H
 #define __SAMPLE_TREE_H
 
 #include "Geometry.h"
 
 class SampleTree {
-private:
-    struct Node {
-        Vector lowerPoint, upperPoint;
-        int population;
-        int leftIndex, rightIndex;
-        int *sampleList;
-    };
-
-    Node *nodes;
-    Vector *samples;
-    int numOfSamples;
-    int maxNodePopulation;
-    int maxTreeDepth;
-    SplittingMethod method;
-
-    double GetSplittingPositionByIntersectionRate(int fr, int to, int *sortArray, int dim, const Vector &lowerPoint, const Vector &upperPoint, double *accumulativeTop, double *accumulativeBottom);
-    void RecursiveBuild(const Node &currNode, int &cnt, int fr, int to, int *sortArray, int *assistArray);
-
 public:
-    enum {MEAN, MEDIUM, VOLUMN, INTERSECTION} SplittingMethod;
+    enum SplittingMethod {MEAN, MEDIUM, VOLUMN, INTERSECTION};
 
     SampleTree() {
         this->nodes = NULL;
@@ -54,6 +36,24 @@ public:
     }
 
     void Build(const Vector *samples, int numOfSamples);
+
+private:
+    struct Node {
+        Vector lowerPoint, upperPoint;
+        int population;
+        int leftIndex, rightIndex;
+        int *sampleList;
+    };
+
+    SampleTree::Node *nodes;
+    Vector *samples;
+    int numOfSamples;
+    int maxNodePopulation;
+    int maxTreeDepth;
+    SplittingMethod method;
+
+    double GetSplittingPositionByIntersectionRate(int fr, int to, int *sortArray, int dim, const Vector &lowerPoint, const Vector &upperPoint, double *accumulativeTop, double *accumulativeBottom);
+    void RecursiveBuildByIntersectionRate(SampleTree::Node &currNode, int &cnt, int fr, int to, int *sortArray, int *assistArray, double *accumulativeTop, double *accumulativeBottom);
 };
 
 #endif

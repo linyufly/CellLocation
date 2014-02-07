@@ -219,11 +219,11 @@ TetrahedralGrid::TetrahedralGrid(vtkUnstructuredGrid *unstructuredGrid) {
 TetrahedralGrid::TetrahedralGrid(int numOfCells, int numOfPoints, int *conn, int *link, double *posi, double *velo) {
 	this->numOfCells = numOfCells;
 	this->numOfVertices = numOfPoints;
-	vertices = new lcs::Vector [numOfPoints];
-	velocities = new lcs::Vector [numOfPoints];
+	vertices = new Vector [numOfPoints];
+	velocities = new Vector [numOfPoints];
 	for (int i = 0; i < numOfPoints; i++) {
-		vertices[i] = lcs::Vector(posi[i * 3], posi[i * 3 + 1], posi[i * 3 + 2]);
-		velocities[i] = lcs::Vector(velo[i * 3], velo[i * 3 + 1], velo[i * 3 + 2]);
+		vertices[i] = Vector(posi[i * 3], posi[i * 3 + 1], posi[i * 3 + 2]);
+		velocities[i] = Vector(velo[i * 3], velo[i * 3 + 1], velo[i * 3 + 2]);
 	}
 	tetrahedralConnectivities = new int [numOfCells << 2];
 	tetrahedralLinks = new int [numOfCells << 2];

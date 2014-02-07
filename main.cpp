@@ -6,6 +6,7 @@ Last Update	:	February 6th, 2014
 
 #include "Utility.h"
 #include "Geometry.h"
+#include "SampleTree.h"
 
 #include <cstdio>
 
@@ -13,6 +14,7 @@ Last Update	:	February 6th, 2014
 
 Tetrahedron *cells;
 Vector *samples;
+SampleTree sampleTree;
 int numOfCells, numOfSamples;
 
 void DisposeAll() {
@@ -25,12 +27,12 @@ void LoadGrid(const char *filename) {
     if (fin == NULL)
         Error("Grid file \"%s\" cannot be opened.", filename);
 
-    fscanf("%d", &numOfCells);
+    fscanf(fin, "%d", &numOfCells);
     cells = new Tetrahedron [numOfCells];
     for (int i = 0; i < numOfCells; i++)
         for (int j = 0; j < 4; j++) {
             double x, y, z;
-            fscanf("%lf %lf %lf", &x, &y, &z);
+            fscanf(fin, "%lf %lf %lf", &x, &y, &z);
             cells[i].SetVertex(j, Vector(x, y, z));
         }
 
@@ -42,15 +44,20 @@ void LoadSamples(const char *filename) {
     if (fin == NULL)
         Error("Sample file \"%s\" cannot be opened.", filename);
 
-    fscanf("%d", &numOfSamples);
+    fscanf(fin, "%d", &numOfSamples);
     samples = new Vector [numOfSamples];
     for (int i = 0; i < numOfSamples; i++) {
         double x, y, z;
-        fscanf("%lf %lf %lf", &x, &y, &z);
+        fscanf(fin, "%lf %lf %lf", &x, &y, &z);
         samples[i] = Vector(x, y, z);
     }
 
     fclose(fin);
+}
+
+void BuildSampleTree(const Vector *samples, int numOfSamples) {
+    sampleTree.SetParameters(10, 20, SampleTree::INTERSECTION);
+    sampleTree.Build(samples, numOfSamples);
 }
 
 int main(int argc, char **argv) {

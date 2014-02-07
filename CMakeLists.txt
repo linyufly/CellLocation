@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(LCSExtractor)
+project(CellLocation)
 
 find_package(VTK)
 if (VTK_FOUND)
@@ -39,12 +39,12 @@ endif()
 #cuda_compile(lcsRedistributeParticles lcsRedistributeParticles.cu)
 #cuda_compile(lcsTetrahedronBlockIntersection lcsTetrahedronBlockIntersection.cu)
 
-cuda_add_executable(extractor
-	lcsGeometry.cpp
-        utility.cpp
-        algebra.cpp
+cuda_add_executable(locator
+	Geometry.cpp
+        Utility.cpp
+        SampleTree.cpp
         main.cpp
 )
 
 
-target_link_libraries(extractor ${VTK_LIBRARIES})
+target_link_libraries(locator ${VTK_LIBRARIES})

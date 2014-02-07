@@ -62,12 +62,12 @@ double SampleTree::GetSplittingPositionByIntersectionRate(int fr, int to, int *s
                     Sqr(GetVectorComponent(upperPoint, dim) - GetVectorComponent(this->samples[sortArray[upperBound - 1]], dim));
 
         double p2 = Sqr(GetVectorComponent(upperPoint, (dim + 1) % 3) - GetVectorComponent(lowerPoint, (dim + 1) % 3)) -
-                    Sqr(GetVectorComponent(bottom[0], (dim + 1) % 3) - GetVectorComponent(lowerPoint, (dim + 1) % 3)) -
-                    Sqr(GetVectorComponent(upperPoint, (dim + 1) % 3) - GetVectorComponent(top[0], (dim + 1) % 3));
+                    Sqr(bottom[0] - GetVectorComponent(lowerPoint, (dim + 1) % 3)) -
+                    Sqr(GetVectorComponent(upperPoint, (dim + 1) % 3) - top[0]);
 
         double p3 = Sqr(GetVectorComponent(upperPoint, (dim + 2) % 3) - GetVectorComponent(lowerPoint, (dim + 2) % 3)) -
-                    Sqr(GetVectorComponent(bottom[1], (dim + 2) % 3) - GetVectorComponent(lowerPoint, (dim + 2) % 3)) -
-                    Sqr(GetVectorComponent(upperPoint, (dim + 2) % 3) - GetVectorComponent(top[1], (dim + 2) % 3));
+                    Sqr(bottom[1] - GetVectorComponent(lowerPoint, (dim + 2) % 3)) -
+                    Sqr(GetVectorComponent(upperPoint, (dim + 2) % 3) - top[1]);
 
         double expectation1 = p1 * p2 * p3 * (upperBound - fr);
 
@@ -76,12 +76,12 @@ double SampleTree::GetSplittingPositionByIntersectionRate(int fr, int to, int *s
              Sqr(GetVectorComponent(upperPoint, dim) - GetVectorComponent(this->samples[sortArray[to]], dim));
 
         p2 = Sqr(GetVectorComponent(upperPoint, (dim + 1) % 3) - GetVectorComponent(lowerPoint, (dim + 1) % 3)) -
-                 Sqr(GetVectorComponent(accumulativeBottom[upperBound], (dim + 1) % 3) - GetVectorComponent(lowerPoint, (dim + 1) % 3)) -
-                 Sqr(GetVectorComponent(upperPoint, (dim + 1) % 3) - GetVectorComponent(accumulativeTop[upperBound], (dim + 1) % 3));
+                 Sqr(accumulativeBottom[upperBound] - GetVectorComponent(lowerPoint, (dim + 1) % 3)) -
+                 Sqr(GetVectorComponent(upperPoint, (dim + 1) % 3) - accumulativeTop[upperBound]);
 
         p3 = Sqr(GetVectorComponent(upperPoint, (dim + 2) % 3) - GetVectorComponent(lowerPoint, (dim + 2) % 3)) -
-                 Sqr(GetVectorComponent(accumulativeBottom[upperBound + this->numOfSamples], (dim + 2) % 3) - GetVectorComponent(lowerPoint, (dim + 2) % 3)) -
-                 Sqr(GetVectorComponent(upperPoint, (dim + 2) % 3) - GetVectorComponent(accumulativeTop[upperBound + this->numOfSamples], (dim + 2) % 3));
+                 Sqr(accumulativeBottom[upperBound + this->numOfSamples] - GetVectorComponent(lowerPoint, (dim + 2) % 3)) -
+                 Sqr(GetVectorComponent(upperPoint, (dim + 2) % 3) - accumulativeTop[upperBound + this->numOfSamples]);
 
         double expectation2 = p1 * p2 * p3 * (to - upperBound + 1);
 
@@ -95,7 +95,7 @@ double SampleTree::GetSplittingPositionByIntersectionRate(int fr, int to, int *s
     return GetVectorComponent(this->samples[sortArray[bestUpperBound - 1]], dim);
 }
 
-void SampleTree::RecursiveBuildByIntersection(const Node &currNode, int &cnt, int fr, int to, int *sortArray, int *assistArray, double *accumulativeTop, double *accumulativeBottom) {
+void SampleTree::RecursiveBuildByIntersectionRate(SampleTree::Node &currNode, int &cnt, int fr, int to, int *sortArray, int *assistArray, double *accumulativeTop, double *accumulativeBottom) {
     currNode.population = to - fr + 1;
     currNode.lowerPoint = Vector(samples[sortArray[fr]].GetX(),
                                  samples[sortArray[this->numOfSamples + fr]].GetY(),
@@ -139,11 +139,11 @@ void SampleTree::RecursiveBuildByIntersection(const Node &currNode, int &cnt, in
             arr[fr + l1++] = assistArray[fr + i];
     }
 
-    this->RecursiveBuildByIntersection(nodes[currNode.leftIndex], cnt, fr, to - l2, sortArray, assistArray, accumulativeTop, accumulativeBottom);
-    this->RecursiveBuildByIntersection(nodes[currNode.rightIndex], cnt, to - l2 + 1, to, sortArray, assistArray, accumulativeTop, accumulativeBottom);
+    this->RecursiveBuildByIntersectionRate(nodes[currNode.leftIndex], cnt, fr, to - l2, sortArray, assistArray, accumulativeTop, accumulativeBottom);
+    this->RecursiveBuildByIntersectionRate(nodes[currNode.rightIndex], cnt, to - l2 + 1, to, sortArray, assistArray, accumulativeTop, accumulativeBottom);
 }
 
-static struct SampleComparator {
+struct SampleComparator {
     int dimension; // 0: X, 1: Y, 2: Z
     const Vector *samples;
     bool operator() (int a, int b) const {
@@ -187,7 +187,7 @@ void SampleTree::Build(const Vector *samples, int numOfSamples) {
             double *accumulativeBottom = new double [numOfSamples * 2];
 
             this->RecursiveBuildByIntersectionRate(nodes[0], cnt, 0, numOfSamples - 1,
-                                                   sortArray, assistArray, samples, accumulativeTop, accumulativeBottom);
+                                                   sortArray, assistArray, accumulativeTop, accumulativeBottom);
 
             delete [] accumulativeTop;
             delete [] accumulativeBottom;
