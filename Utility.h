@@ -1,7 +1,7 @@
 /**********************************************
 File		:	Utility.h
 Author		:	Mingcheng Chen
-Last Update	:	February 6th, 2014
+Last Update	:	February 8th, 2014
 ***********************************************/
 
 #ifndef __UTILITY_H
@@ -19,56 +19,22 @@ double GetCurrentTimeInSeconds();
 
 int Code(int x, int y, int z, int ny, int nz);
 void Decode(int &x, int &y, int &z, int code, int ny, int nz);
+const char *GetSuffix(const char *str);
 
 class Configuration {
 private:
-    double dx;
-    double dy;
-    double dz;
-    double sigma; // for smoothing
-    int nx;
-    int ny;
-    int nz;
-    int stencilSize;
-    std::string dataFile;
+    int maxNodePopulation;
+    int maxTreeDepth;
 
 public:
     void LoadFile(const char *fileName);
 
-    double GetDx() const {
-        return dx;
+    int GetMaxNodePopulation() const {
+        return this->maxNodePopulation;
     }
 
-    double GetDy() const {
-        return dy;
-    }
-
-    double GetDz() const {
-        return dz;
-    }
-
-    double GetSigma() const {
-        return sigma;
-    }
-
-    std::string GetDataFile() const {
-        return dataFile;
-    }
-
-    int GetNx() const {
-        return nx;
-    }
-
-    int GetNy() const {
-        return ny;
-    }
-
-    int GetNz() const {
-        return nz;
-    }
-
-    int GetStencilSize() const {
-        return stencilSize;
+    int GetMaxTreeDepth() const {
+        return this->maxTreeDepth;
     }
 };
 

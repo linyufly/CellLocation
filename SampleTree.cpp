@@ -107,9 +107,10 @@ void SampleTree::RecursiveBuildByIntersectionRate(SampleTree::Node &currNode, in
         currNode.leftIndex = currNode.rightIndex = -1;
         currNode.sampleList = new int [currNode.population];
         for (int i = fr; i <= to; i++)
-            currNode.sampleList[i] = sortArray[i];
+            currNode.sampleList[i - fr] = sortArray[i];
         return;
     }
+
     currNode.sampleList = NULL;
     currNode.leftIndex = ++cnt;
     currNode.rightIndex = ++cnt;
@@ -193,6 +194,8 @@ void SampleTree::Build(const Vector *samples, int numOfSamples) {
             delete [] accumulativeBottom;
         } break;
     }
+
+    this->numOfNodes = cnt + 1;
 
     delete [] assistArray;
     delete [] sortArray;

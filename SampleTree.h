@@ -21,7 +21,7 @@ public:
 
     ~SampleTree() {
         if (this->nodes) {
-            for (int i = (numOfSamples << 1) - 2; i >= 0; i--)
+            for (int i = 0; i < this->numOfNodes; i++)
                 if (this->nodes[i].sampleList)
                     delete [] nodes[i].sampleList;
             delete [] this->nodes;
@@ -33,6 +33,10 @@ public:
         this->maxNodePopulation = maxNodePopulation;
         this->maxTreeDepth = maxTreeDepth;
         this->method = method;
+    }
+
+    int GetNumOfNodes() const {
+        return this->numOfNodes;
     }
 
     void Build(const Vector *samples, int numOfSamples);
@@ -48,6 +52,7 @@ private:
     SampleTree::Node *nodes;
     Vector *samples;
     int numOfSamples;
+    int numOfNodes;
     int maxNodePopulation;
     int maxTreeDepth;
     SplittingMethod method;

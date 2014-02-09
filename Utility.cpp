@@ -1,7 +1,7 @@
 /**********************************************
 File		:	Utility.cpp
 Author		:	Mingcheng Chen
-Last Update	:	February 6th, 2014
+Last Update	:	February 8th, 2014
 ***********************************************/
 
 #include "Utility.h"
@@ -22,6 +22,12 @@ void Decode(int &x, int &y, int &z, int code, int ny, int nz) {
     code /= (nz + 1);
     y = code % (ny + 1);
     x = code / (ny + 1);
+}
+
+const char *GetSuffix(const char *str) {
+    int len = strlen(str), i;
+    for (i = len - 1; i >= 0 && str[i] != '.'; i--);
+    return i < 0 ? NULL : str + i + 1;
 }
 
 void Error(const char *format, ...) {
@@ -117,18 +123,8 @@ void Configuration::LoadFile(const char *fileName) {
             // Skip the equation mark
             ConsumeChar('=', fin);
 
-            READ_DOUBLE(dx)
-            READ_DOUBLE(dy)
-            READ_DOUBLE(dz)
-            READ_DOUBLE(sigma)
-            READ_INT(nx)
-            READ_INT(ny)
-            READ_INT(nz)
-            READ_INT(stencilSize)
-            READ_STRING(dataFile)
-
-            if (stencilSize % 2 == 0)
-                Error("Stencil size is even.");
+            READ_INT(maxNodePopulation)
+            READ_INT(maxTreeDepth)
         }
     }
 
