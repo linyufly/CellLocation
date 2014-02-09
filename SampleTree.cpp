@@ -200,3 +200,42 @@ void SampleTree::Build(const Vector *samples, int numOfSamples) {
     delete [] assistArray;
     delete [] sortArray;
 }
+
+static void Indent(int indent) {
+    for (int i = 0; i < indent; i++)
+        printf(" ");
+}
+
+void SampleTree::RecursiveOutput(int currNode, int indent) const {
+    Indent(indent);
+
+    for (int i = 0; i < 3; i++) {
+        if (i) printf(" x ");
+        printf("[%lf, %lf]", GetVectorComponent(this->nodes[currNode].lowerPoint, i),
+                             GetVectorComponent(this->nodes[currNode].upperPoint, i));
+    }
+    printf(", population = %d\n", this->nodes[currNode].population);
+
+    if (this->nodes[currNode].sampleList) {
+        Indent(indent);
+        printf("Leaf:");
+        for (int i = 0; i < this->nodes[currNode].population; i++) {
+            Vector point = this->samples[this->nodes[currNode].sampleList[i]];
+            printf(" (%lf, %lf, %lf)", point.GetX(), point.GetY(), point.GetZ());
+        }
+        printf("\n");
+    } else {
+        Indent(indent);
+        printf("Non-leaf:\n");
+        this->RecursiveOutput(this->nodes[currNode].leftIndex, indent + 4);
+        this->RecursiveOutput(this->nodes[currNode].rightIndex, indent + 4);
+    }
+}
+
+void SampleTree::Output() const {
+    printf("Output SampleTree\n");
+
+    this->RecursiveOutput(0, 0);
+
+    printf("#END#\n");
+}

@@ -107,6 +107,8 @@ void BuildSampleTree(const Vector *samples, int numOfSamples) {
     sampleTree.Build(samples, numOfSamples);
     printf("sampleTree.GetNumOfNodes() = %d\n", sampleTree.GetNumOfNodes());
 
+    sampleTree.Output();
+
     printf("Done.\n\n");
 }
 

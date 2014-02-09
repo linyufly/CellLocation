@@ -40,6 +40,7 @@ public:
     }
 
     void Build(const Vector *samples, int numOfSamples);
+    void Output() const;
 
 private:
     struct Node {
@@ -59,6 +60,7 @@ private:
 
     double GetSplittingPositionByIntersectionRate(int fr, int to, int *sortArray, int dim, const Vector &lowerPoint, const Vector &upperPoint, double *accumulativeTop, double *accumulativeBottom);
     void RecursiveBuildByIntersectionRate(SampleTree::Node &currNode, int &cnt, int fr, int to, int *sortArray, int *assistArray, double *accumulativeTop, double *accumulativeBottom);
+    void RecursiveOutput(int currNode, int indent) const;
 };
 
 #endif
